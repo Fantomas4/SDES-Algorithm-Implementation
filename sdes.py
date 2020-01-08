@@ -79,4 +79,37 @@ class Sdes:
         # Store the result of P8 as subkey_2
         self.subkey_2 = p_8
 
+    def initial_permutation(self, plaintext_bits):
+
+        # Perform the Initial Permutation (IP)
+        ip = [0, 0, 0, 0, 0, 0, 0, 0]
+        ip[0] = plaintext_bits[1]
+        ip[1] = plaintext_bits[5]
+        ip[2] = plaintext_bits[2]
+        ip[3] = plaintext_bits[0]
+        ip[4] = plaintext_bits[3]
+        ip[5] = plaintext_bits[7]
+        ip[6] = plaintext_bits[4]
+        ip[7] = plaintext_bits[6]
+
+        return ip
+
+    def fk_function(self, ip):
+
+        # Divide the 8-bit ip into a left sublist containing
+        # the first 4 bits and a right sublist containing the final 4 bits.
+        l_sublist = ip[:4]
+        r_sublist = ip[4:]
+
+        # Perform the Expansion/Permutation (E/P) operation using r_sublist
+        ep = [0, 0, 0, 0, 0, 0, 0, 0]
+        ep[0] = r_sublist[3]
+        ep[1] = r_sublist[0]
+        ep[2] = r_sublist[1]
+        ep[3] = r_sublist[2]
+        ep[4] = r_sublist[1]
+        ep[5] = r_sublist[2]
+        ep[6] = r_sublist[3]
+        ep[7] = r_sublist[0]
+
 
