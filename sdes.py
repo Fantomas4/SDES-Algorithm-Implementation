@@ -139,7 +139,49 @@ class Sdes:
 
         # For the first subsequence, get the value of the S0 matrix
         # that is indicated by the subsequence's bits as follows:
-        # sum_subseq_1 = [bit0, bit1, bit2, bit3] --> get S0[
+        # sum_subseq_1 = [bit0, bit1, bit2, bit3] --> get S0[bit0bit3, bit1bit2]
+        s0_x = int(str(sum_subseq_1[0]) + str(sum_subseq_1[3]), 2)
+        s0_y = int(str(sum_subseq_1[1]) + str(sum_subseq_1[2]), 2)
+        s0_res_str = self.s0_matrix[s0_x][s0_y]
+
+        # For the second subsequence, get the value of the S1 matrix
+        # that is indicated by the subsequence's bits as follows:
+        # sum_subseq_2 = [bit0, bit1, bit2, bit3] --> get S1[bit0bit3, bit1bit2]
+        s1_x = int(str(sum_subseq_2[0]) + str(sum_subseq_2[3]), 2)
+        s1_y = int(str(sum_subseq_2[1]) + str(sum_subseq_2[2]), 2)
+        s1_res_str = self.s1_matrix[s1_x][s1_y]
+
+        # Combine both strings containing binary numbers into one that
+        # will be given as input to P4 (Permutation-4)
+        comb_str = s0_res_str + s1_res_str
+
+        # Convert to a list for easier manipulation
+        comb_list = list(comb_str)
+
+        # Perform the P4 (Permutation-4) using comb_list as input
+        # P4
+        # 2
+        # 4
+        # 3
+        # 1
+        p4 = [0, 0, 0, 0]
+        p4[0] = comb_list[1]
+        p4[1] = comb_list[3]
+        p4[2] = comb_list[2]
+        p4[3] = comb_list[0]
+
+        # Perform a binary addition between the left sublist (l_sublist) of the initial input
+        # given to Fk and P4's result to get the final result returned by Fk
+        # Convert l_sublist list and p4 list to strings
+        l_sublist_str = "".join(str(b) for b in l_sublist)
+        p4_str = "".join(str(b) for b in p4)
+        result_str = bin(int(l_sublist_str, 2) + int(p4_str, 2))
+
+        return result_str
+
+
+
+
 
 
 
