@@ -3,6 +3,16 @@ from collections import deque
 
 class Sdes:
 
+    s0_matrix = [["01", "00", "11", "10"],
+                 ["11", "10", "01", "00"],
+                 ["00", "10", "01", "11"],
+                 ["11", "01", "11", "10"]]
+
+    s1_matrix = [["00", "01", "10", "11"],
+                 ["10", "00", "01", "11"],
+                 ["11", "00", "01", "00"],
+                 ["10", "01", "00", "11"]]
+
     def __init__(self):
         self.subkey_1 = None
         self.subkey_2 = None
@@ -111,5 +121,27 @@ class Sdes:
         ep[5] = r_sublist[2]
         ep[6] = r_sublist[3]
         ep[7] = r_sublist[0]
+
+        # Perform binary addition between E/P and Subkey 1
+        # Convert ep list and subkey_1 list to strings
+        ep_str = "".join(str(b) for b in ep)
+        subkey_1_str = "".join(str(b) for b in self.subkey_1)
+        binary_sum_str = bin(int(ep_str, 2) + int(subkey_1_str, 2))
+
+        # Convert the binary sum string result to a list for easier manipulation
+        binary_sum_list = list(binary_sum_str)
+
+        # Split the 8-bit list into 2 subsequences, with the first subsequence
+        # containing the first 4 bits of the original list and the second
+        # subsequence containing the last 4 bits of the original list.
+        sum_subseq_1 = binary_sum_list[:4]
+        sum_subseq_2 = binary_sum_list[4:]
+
+        # For the first subsequence, get the value of the S0 matrix
+        # that is indicated by the subsequence's bits as follows:
+        # sum_subseq_1 = [bit0, bit1, bit2, bit3] --> get S0[
+
+
+
 
 
