@@ -19,7 +19,6 @@ class Sdes:
 
     # Receives a 10-bit key and generates 2 subkeys
     def generate_subkeys(self, key):
-
         # Perform P10 (Permutation-10)
         p_10 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         p_10[0] = key[2]
@@ -89,23 +88,47 @@ class Sdes:
         # Store the result of P8 as subkey_2
         self.subkey_2 = p_8
 
-    def initial_permutation(self, plaintext_bits):
-
+    def initial_permutation(self, plaintext_str):
         # Perform the Initial Permutation (IP)
         ip = [0, 0, 0, 0, 0, 0, 0, 0]
-        ip[0] = plaintext_bits[1]
-        ip[1] = plaintext_bits[5]
-        ip[2] = plaintext_bits[2]
-        ip[3] = plaintext_bits[0]
-        ip[4] = plaintext_bits[3]
-        ip[5] = plaintext_bits[7]
-        ip[6] = plaintext_bits[4]
-        ip[7] = plaintext_bits[6]
+        ip[0] = plaintext_str[1]
+        ip[1] = plaintext_str[5]
+        ip[2] = plaintext_str[2]
+        ip[3] = plaintext_str[0]
+        ip[4] = plaintext_str[3]
+        ip[5] = plaintext_str[7]
+        ip[6] = plaintext_str[4]
+        ip[7] = plaintext_str[6]
 
-        return ip
+        # Divide the 8-bit ip into a left sublist containing
+        # the first 4 bits and a right sublist containing the final 4 bits.
+        l_sublist = ip[:4]
+        r_sublist = ip[4:]
+
+        return l_sublist, r_sublist
+
+    def initial_permutation_inverse(self, fk_output):
+        # Combine both 4-bit lists given by the fk function into one
+        # 8-bit binary sequence list.
+        binary_seq = fk_output[0] + fk_output[1]
+
+        ip_inv = [0, 0, 0, 0, 0, 0, 0, 0]
+        ip_inv[0] = binary_seq[3]
+        ip_inv[1] = binary_seq[0]
+        ip_inv[2] = binary_seq[2]
+        ip_inv[3] = binary_seq[4]
+        ip_inv[4] = binary_seq[6]
+        ip_inv[5] = binary_seq[1]
+        ip_inv[6] = binary_seq[7]
+        ip_inv[7] = binary_seq[5]
+
+        # Return the result (ciphertext) as a string
+        return "".join(b for b in ip_inv)
+
+    def switch_function(self, first_list, second_list):
+        return second_list, first_list
 
     def fk_function(self, ip):
-
         # Divide the 8-bit ip into a left sublist containing
         # the first 4 bits and a right sublist containing the final 4 bits.
         l_sublist = ip[:4]
@@ -175,9 +198,9 @@ class Sdes:
         # Convert l_sublist list and p4 list to strings
         l_sublist_str = "".join(str(b) for b in l_sublist)
         p4_str = "".join(str(b) for b in p4)
-        result_str = bin(int(l_sublist_str, 2) + int(p4_str, 2))
+        addition_str = bin(int(l_sublist_str, 2) + int(p4_str, 2))
 
-        return result_str
+        return list(addition_str), r_sublist
 
 
 
