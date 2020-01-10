@@ -128,12 +128,7 @@ class Sdes:
     def switch_function(self, first_list, second_list):
         return second_list, first_list
 
-    def fk_function(self, ip):
-        # Divide the 8-bit ip into a left sublist containing
-        # the first 4 bits and a right sublist containing the final 4 bits.
-        l_sublist = ip[:4]
-        r_sublist = ip[4:]
-
+    def fk_function(self, l_sublist, r_sublist):
         # Perform the Expansion/Permutation (E/P) operation using r_sublist
         ep = [0, 0, 0, 0, 0, 0, 0, 0]
         ep[0] = r_sublist[3]
@@ -202,8 +197,29 @@ class Sdes:
 
         return list(addition_str), r_sublist
 
+    # Performs the necessary operations that are used in the same way for
+    # both encryption and decryption
+    def encryption_decryption_operation(self, text):
+        l_sublist, r_sublist = self.initial_permutation(text)
 
+        addition_list, r_sublist = self.fk_function(l_sublist, r_sublist)
 
+        l_sublist, r_sublist = self.switch_function(addition_list, r_sublist)
+
+        return self.initial_permutation_inverse(self.fk_function(l_sublist, r_sublist))
+
+    # Receives an 8-bit plaintext and encrypts it using the SDES algorithm.
+    def encrypt(self, plaintext):
+        return self.encryption_decryption_operation(plaintext)
+
+    # Receives an 8-bit plaintext and decrypts it using the SDES algorithm.
+    def decrypt(self, ciphertext):
+        return self.encryption_decryption_operation(ciphertext)
+
+    def main(self):
+
+    if __name__ == "__main__":
+        main()
 
 
 
