@@ -13,9 +13,10 @@ class Sdes:
                  ["11", "00", "01", "00"],
                  ["10", "01", "00", "11"]]
 
-    def __init__(self):
-        self.subkey_1 = None
-        self.subkey_2 = None
+    def __init__(self, key):
+        self.__subkey_1 = None
+        self.__subkey_2 = None
+        self.generate_subkeys(key)
 
     # Receives a 10-bit key and generates 2 subkeys
     def generate_subkeys(self, key):
@@ -64,7 +65,7 @@ class Sdes:
         self.subkey_1 = p_8
 
         # Perform a 2-bit circular Left Shift to ls1_subseq_1 and ls1_subseq_2
-        ls2_subseq_1 = ls1_subseq_2.copy()
+        ls2_subseq_1 = ls1_subseq_1.copy()
         ls2_subseq_1.rotate(-2)
 
         ls2_subseq_2 = ls1_subseq_2.copy()
@@ -144,7 +145,7 @@ class Sdes:
         # Convert ep list and subkey_1 list to strings
         ep_str = "".join(str(b) for b in ep)
         subkey_1_str = "".join(str(b) for b in self.subkey_1)
-        binary_sum_str = bin(int(ep_str, 2) + int(subkey_1_str, 2))
+        binary_sum_str = bin(int(ep_str, 2) + int(subkey_1_str, 2))[2:].zfill(4)
 
         # Convert the binary sum string result to a list for easier manipulation
         binary_sum_list = list(binary_sum_str)
@@ -193,33 +194,41 @@ class Sdes:
         # Convert l_sublist list and p4 list to strings
         l_sublist_str = "".join(str(b) for b in l_sublist)
         p4_str = "".join(str(b) for b in p4)
-        addition_str = bin(int(l_sublist_str, 2) + int(p4_str, 2))
+        addition_str = bin(int(l_sublist_str, 2) + int(p4_str, 2))[2:].zfill(4)
 
         return list(addition_str), r_sublist
 
     # Performs the necessary operations that are used in the same way for
     # both encryption and decryption
-    def encryption_decryption_operation(self, text):
+    def __encryption_decryption_operation(self, text):
         l_sublist, r_sublist = self.initial_permutation(text)
 
         addition_list, r_sublist = self.fk_function(l_sublist, r_sublist)
 
         l_sublist, r_sublist = self.switch_function(addition_list, r_sublist)
 
-        return self.initial_permutation_inverse(self.fk_function(l_sublist, r_sublist))
+        l_sublist, r_sublist = self.fk_function(l_sublist, r_sublist)
+
+        return self.initial_permutation_inverse((l_sublist, r_sublist))
 
     # Receives an 8-bit plaintext and encrypts it using the SDES algorithm.
     def encrypt(self, plaintext):
-        return self.encryption_decryption_operation(plaintext)
+        return self.__encryption_decryption_operation(plaintext)
 
     # Receives an 8-bit plaintext and decrypts it using the SDES algorithm.
     def decrypt(self, ciphertext):
-        return self.encryption_decryption_operation(ciphertext)
+        return self.__encryption_decryption_operation(ciphertext)
 
-    def main(self):
 
-    if __name__ == "__main__":
-        main()
+def main():
+    key = "1100011110"
+    sdes_obj = Sdes(key)
+    ciphertext = sdes_obj.encrypt("00101000")
+    print(ciphertext)
+
+
+if __name__ == "__main__":
+    main()
 
 
 
