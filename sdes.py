@@ -18,20 +18,32 @@ class Sdes:
         self.__subkey_2 = None
         self.generate_subkeys(key)
 
+    # Performs the bit-by-bit XOR operation between two binary lists
+    # of equal size and returns a list containing the result
+    def binary_list_xor(self, list_1, list_2):
+        xor_res = []
+        for bit in range(len(list_1)):
+            if list_1[bit] == list_2[bit]:
+                xor_res.append(0)
+            else:
+                xor_res.append(1)
+
+        return  xor_res
+
     # Receives a 10-bit key and generates 2 subkeys
     def generate_subkeys(self, key):
         # Perform P10 (Permutation-10)
         p_10 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        p_10[0] = key[2]
-        p_10[1] = key[4]
-        p_10[2] = key[1]
-        p_10[3] = key[6]
-        p_10[4] = key[3]
-        p_10[5] = key[9]
-        p_10[6] = key[0]
-        p_10[7] = key[8]
-        p_10[8] = key[7]
-        p_10[9] = key[5]
+        p_10[0] = int(key[2])
+        p_10[1] = int(key[4])
+        p_10[2] = int(key[1])
+        p_10[3] = int(key[6])
+        p_10[4] = int(key[3])
+        p_10[5] = int(key[9])
+        p_10[6] = int(key[0])
+        p_10[7] = int(key[8])
+        p_10[8] = int(key[7])
+        p_10[9] = int(key[5])
 
         # Split the 10-bit p_10 binary sequence into 2 binary sequences
         # with 5 bits each
@@ -92,14 +104,14 @@ class Sdes:
     def initial_permutation(self, plaintext_str):
         # Perform the Initial Permutation (IP)
         ip = [0, 0, 0, 0, 0, 0, 0, 0]
-        ip[0] = plaintext_str[1]
-        ip[1] = plaintext_str[5]
-        ip[2] = plaintext_str[2]
-        ip[3] = plaintext_str[0]
-        ip[4] = plaintext_str[3]
-        ip[5] = plaintext_str[7]
-        ip[6] = plaintext_str[4]
-        ip[7] = plaintext_str[6]
+        ip[0] = int(plaintext_str[1])
+        ip[1] = int(plaintext_str[5])
+        ip[2] = int(plaintext_str[2])
+        ip[3] = int(plaintext_str[0])
+        ip[4] = int(plaintext_str[3])
+        ip[5] = int(plaintext_str[7])
+        ip[6] = int(plaintext_str[4])
+        ip[7] = int(plaintext_str[6])
 
         # Divide the 8-bit ip into a left sublist containing
         # the first 4 bits and a right sublist containing the final 4 bits.
@@ -124,12 +136,12 @@ class Sdes:
         ip_inv[7] = binary_seq[5]
 
         # Return the result (ciphertext) as a string
-        return "".join(b for b in ip_inv)
+        return "".join(str(bit) for bit in ip_inv)
 
     def switch_function(self, first_list, second_list):
         return second_list, first_list
 
-    def fk_function(self, l_sublist, r_sublist):
+    def fk_function(self, l_sublist, r_sublist, subkey):
         # Perform the Expansion/Permutation (E/P) operation using r_sublist
         ep = [0, 0, 0, 0, 0, 0, 0, 0]
         ep[0] = r_sublist[3]
@@ -141,33 +153,28 @@ class Sdes:
         ep[6] = r_sublist[3]
         ep[7] = r_sublist[0]
 
-        # Perform binary addition between E/P and Subkey 1
-        # Convert ep list and subkey_1 list to strings
-        ep_str = "".join(str(b) for b in ep)
-        subkey_1_str = "".join(str(b) for b in self.subkey_1)
-        binary_sum_str = bin(int(ep_str, 2) + int(subkey_1_str, 2))[2:].zfill(4)
+        # Perform the bit-by-bit XOR operation between E/P and the subkey
+        # given to the Fk method.
+        xor_res = self.binary_list_xor(ep, subkey)
 
-        # Convert the binary sum string result to a list for easier manipulation
-        binary_sum_list = list(binary_sum_str)
-
-        # Split the 8-bit list into 2 subsequences, with the first subsequence
+        # Split the 8-bit xor_res list into 2 subsequences, with the first subsequence
         # containing the first 4 bits of the original list and the second
         # subsequence containing the last 4 bits of the original list.
-        sum_subseq_1 = binary_sum_list[:4]
-        sum_subseq_2 = binary_sum_list[4:]
+        subseq_1 = xor_res[:4]
+        subseq_2 = xor_res[4:]
 
         # For the first subsequence, get the value of the S0 matrix
         # that is indicated by the subsequence's bits as follows:
-        # sum_subseq_1 = [bit0, bit1, bit2, bit3] --> get S0[bit0bit3, bit1bit2]
-        s0_x = int(str(sum_subseq_1[0]) + str(sum_subseq_1[3]), 2)
-        s0_y = int(str(sum_subseq_1[1]) + str(sum_subseq_1[2]), 2)
+        # subseq_1 = [bit0, bit1, bit2, bit3] --> get S0[bit0bit3, bit1bit2]
+        s0_x = int(str(subseq_1[0]) + str(subseq_1[3]), 2)
+        s0_y = int(str(subseq_1[1]) + str(subseq_1[2]), 2)
         s0_res_str = self.s0_matrix[s0_x][s0_y]
 
         # For the second subsequence, get the value of the S1 matrix
         # that is indicated by the subsequence's bits as follows:
-        # sum_subseq_2 = [bit0, bit1, bit2, bit3] --> get S1[bit0bit3, bit1bit2]
-        s1_x = int(str(sum_subseq_2[0]) + str(sum_subseq_2[3]), 2)
-        s1_y = int(str(sum_subseq_2[1]) + str(sum_subseq_2[2]), 2)
+        # subseq_2 = [bit0, bit1, bit2, bit3] --> get S1[bit0bit3, bit1bit2]
+        s1_x = int(str(subseq_2[0]) + str(subseq_2[3]), 2)
+        s1_y = int(str(subseq_2[1]) + str(subseq_2[2]), 2)
         s1_res_str = self.s1_matrix[s1_x][s1_y]
 
         # Combine both strings containing binary numbers into one that
@@ -175,7 +182,7 @@ class Sdes:
         comb_str = s0_res_str + s1_res_str
 
         # Convert to a list for easier manipulation
-        comb_list = list(comb_str)
+        comb_list = list(int(bit) for bit in comb_str)
 
         # Perform the P4 (Permutation-4) using comb_list as input
         # P4
@@ -189,35 +196,35 @@ class Sdes:
         p4[2] = comb_list[2]
         p4[3] = comb_list[0]
 
-        # Perform a binary addition between the left sublist (l_sublist) of the initial input
+        # Perform the bit-by-bit XOR operation between the left sublist (l_sublist) of the initial input
         # given to Fk and P4's result to get the final result returned by Fk
-        # Convert l_sublist list and p4 list to strings
-        l_sublist_str = "".join(str(b) for b in l_sublist)
-        p4_str = "".join(str(b) for b in p4)
-        addition_str = bin(int(l_sublist_str, 2) + int(p4_str, 2))[2:].zfill(4)
+        xor_res = self.binary_list_xor(l_sublist, p4)
 
-        return list(addition_str), r_sublist
-
-    # Performs the necessary operations that are used in the same way for
-    # both encryption and decryption
-    def __encryption_decryption_operation(self, text):
-        l_sublist, r_sublist = self.initial_permutation(text)
-
-        addition_list, r_sublist = self.fk_function(l_sublist, r_sublist)
-
-        l_sublist, r_sublist = self.switch_function(addition_list, r_sublist)
-
-        l_sublist, r_sublist = self.fk_function(l_sublist, r_sublist)
-
-        return self.initial_permutation_inverse((l_sublist, r_sublist))
+        return xor_res, r_sublist
 
     # Receives an 8-bit plaintext and encrypts it using the SDES algorithm.
     def encrypt(self, plaintext):
-        return self.__encryption_decryption_operation(plaintext)
+        l_sublist, r_sublist = self.initial_permutation(plaintext)
+
+        addition_list, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_1)
+
+        l_sublist, r_sublist = self.switch_function(addition_list, r_sublist)
+
+        l_sublist, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_2)
+
+        return self.initial_permutation_inverse((l_sublist, r_sublist))
 
     # Receives an 8-bit plaintext and decrypts it using the SDES algorithm.
     def decrypt(self, ciphertext):
-        return self.__encryption_decryption_operation(ciphertext)
+        l_sublist, r_sublist = self.initial_permutation(ciphertext)
+
+        addition_list, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_2)
+
+        l_sublist, r_sublist = self.switch_function(addition_list, r_sublist)
+
+        l_sublist, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_1)
+
+        return self.initial_permutation_inverse((l_sublist, r_sublist))
 
 
 def main():
@@ -225,6 +232,8 @@ def main():
     sdes_obj = Sdes(key)
     ciphertext = sdes_obj.encrypt("00101000")
     print(ciphertext)
+    plaintext = sdes_obj.decrypt(ciphertext)
+    print(plaintext)
 
 
 if __name__ == "__main__":
