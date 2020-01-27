@@ -18,9 +18,10 @@ class Sdes:
         self.__subkey_2 = None
         self.generate_subkeys(key)
 
-    # Performs the bit-by-bit XOR operation between two binary lists
-    # of equal size and returns a list containing the result
     def binary_list_xor(self, list_1, list_2):
+        """ Performs the bit-by-bit XOR operation between two binary lists
+        of equal size and returns a list containing the result """
+
         xor_res = []
         for bit in range(len(list_1)):
             if list_1[bit] == list_2[bit]:
@@ -28,10 +29,11 @@ class Sdes:
             else:
                 xor_res.append(1)
 
-        return  xor_res
+        return xor_res
 
-    # Receives a 10-bit key and generates 2 subkeys
     def generate_subkeys(self, key):
+        """ Receives a 10-bit key and generates 2 subkeys """
+
         # Perform P10 (Permutation-10)
         p_10 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         p_10[0] = int(key[2])
@@ -102,7 +104,8 @@ class Sdes:
         self.subkey_2 = p_8
 
     def initial_permutation(self, plaintext_str):
-        # Perform the Initial Permutation (IP)
+        """Performs the Initial Permutation (IP)"""
+
         ip = [0, 0, 0, 0, 0, 0, 0, 0]
         ip[0] = int(plaintext_str[1])
         ip[1] = int(plaintext_str[5])
@@ -121,6 +124,8 @@ class Sdes:
         return l_sublist, r_sublist
 
     def initial_permutation_inverse(self, fk_output):
+        """ Performs the Inverse of Initial Permutation """
+
         # Combine both 4-bit lists given by the fk function into one
         # 8-bit binary sequence list.
         binary_seq = fk_output[0] + fk_output[1]
@@ -135,13 +140,14 @@ class Sdes:
         ip_inv[6] = binary_seq[7]
         ip_inv[7] = binary_seq[5]
 
-        # Return the result (ciphertext) as a string
+        # Return the result (ciphertext) as a string.
         return "".join(str(bit) for bit in ip_inv)
 
     def switch_function(self, first_list, second_list):
         return second_list, first_list
 
     def fk_function(self, l_sublist, r_sublist, subkey):
+
         # Perform the Expansion/Permutation (E/P) operation using r_sublist
         ep = [0, 0, 0, 0, 0, 0, 0, 0]
         ep[0] = r_sublist[3]
@@ -185,11 +191,6 @@ class Sdes:
         comb_list = list(int(bit) for bit in comb_str)
 
         # Perform the P4 (Permutation-4) using comb_list as input
-        # P4
-        # 2
-        # 4
-        # 3
-        # 1
         p4 = [0, 0, 0, 0]
         p4[0] = comb_list[1]
         p4[1] = comb_list[3]
@@ -202,8 +203,14 @@ class Sdes:
 
         return xor_res, r_sublist
 
-    # Receives an 8-bit plaintext and encrypts it using the SDES algorithm.
     def encrypt(self, plaintext):
+        """ Receives an 8-bit plaintext and encrypts it using the SDES algorithm.
+
+        :param plaintext: The plaintext that will be encrypted
+        :return: The result ciphertext of the encryption
+
+        """
+
         l_sublist, r_sublist = self.initial_permutation(plaintext)
 
         addition_list, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_1)
@@ -214,8 +221,14 @@ class Sdes:
 
         return self.initial_permutation_inverse((l_sublist, r_sublist))
 
-    # Receives an 8-bit plaintext and decrypts it using the SDES algorithm.
     def decrypt(self, ciphertext):
+        """ Receives an 8-bit plaintext and decrypts it using the SDES algorithm.
+
+        :param ciphertext: The ciphertext that will be decrypted
+        :return: The result plaintext of the decryption
+
+        """
+
         l_sublist, r_sublist = self.initial_permutation(ciphertext)
 
         addition_list, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_2)
@@ -228,12 +241,28 @@ class Sdes:
 
 
 def main():
-    key = "1100011110"
+    """ Executes an encryption and a decryption example using the SDES algorithm
+    and prints the results """
+
+    # Encryption example
+    key = "1010000010"
     sdes_obj = Sdes(key)
-    ciphertext = sdes_obj.encrypt("00101000")
-    print(ciphertext)
+    plaintext = "01110010"
+    ciphertext = sdes_obj.encrypt(plaintext)
+    print("> Encryption example: ")
+    print("- Using key: ", key)
+    print("- Using plaintext: ", plaintext)
+    print("- The result ciphertext is: ", ciphertext)
+
+    # Decryption example
+    key = "1010000010"
+    sdes_obj = Sdes(key)
+    ciphertext = "01110111"
     plaintext = sdes_obj.decrypt(ciphertext)
-    print(plaintext)
+    print("\n\n> Decryption example: ")
+    print("- Using key: ", key)
+    print("- Using ciphertext: ", ciphertext)
+    print("- The result plaintext is: ", plaintext)
 
 
 if __name__ == "__main__":
