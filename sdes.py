@@ -241,24 +241,25 @@ class Sdes:
 
 def menu():
     title = """ 
-         ___________ _____ _____    ___  _                  _ _   _                 _____       _            _       _             
-        /  ___|  _  \  ___/  ___|  / _ \| |                (_) | | |               /  __ \     | |          | |     | |            
-        \ `--.| | | | |__ \ `--.  / /_\ \ | __ _  ___  _ __ _| |_| |__  _ __ ___   | /  \/ __ _| | ___ _   _| | __ _| |_ ___  _ __ 
-         `--. \ | | |  __| `--. \ |  _  | |/ _` |/ _ \| '__| | __| '_ \| '_ ` _ \  | |    / _` | |/ __| | | | |/ _` | __/ _ \| '__|
-        /\__/ / |/ /| |___/\__/ / | | | | | (_| | (_) | |  | | |_| | | | | | | | | | \__/\ (_| | | (__| |_| | | (_| | || (_) | |   
-        \____/|___/ \____/\____/  \_| |_/_|\__, |\___/|_|  |_|\__|_| |_|_| |_| |_|  \____/\__,_|_|\___|\__,_|_|\__,_|\__\___/|_|   
-                                            __/ |                                                                                  
-                                           |___/                                                                                   
-        """
+     ___________ _____ _____    ___  _                  _ _   _                 _____       _            _       _             
+    /  ___|  _  \  ___/  ___|  / _ \| |                (_) | | |               /  __ \     | |          | |     | |            
+    \ `--.| | | | |__ \ `--.  / /_\ \ | __ _  ___  _ __ _| |_| |__  _ __ ___   | /  \/ __ _| | ___ _   _| | __ _| |_ ___  _ __ 
+     `--. \ | | |  __| `--. \ |  _  | |/ _` |/ _ \| '__| | __| '_ \| '_ ` _ \  | |    / _` | |/ __| | | | |/ _` | __/ _ \| '__|
+    /\__/ / |/ /| |___/\__/ / | | | | | (_| | (_) | |  | | |_| | | | | | | | | | \__/\ (_| | | (__| |_| | | (_| | || (_) | |   
+    \____/|___/ \____/\____/  \_| |_/_|\__, |\___/|_|  |_|\__|_| |_|_| |_| |_|  \____/\__,_|_|\___|\__,_|_|\__,_|\__\___/|_|   
+                                        __/ |                                                                                  
+                                       |___/                                                                                   
+    """
     print(title)
     print("\n\n> This is an example implementation of the SDES algorithm for binary data. \n")
     print("> Please choose one of the following: \n"
           "  1) Encrypt a binary sequence\n"
-          "  2) Decrypt a binary sequence")
+          "  2) Decrypt a binary sequence\n"
+          "  3) Exit")
 
     while True:
         user_choice = int(input("\n> Enter your choice number: "))
-        if user_choice == 1 or user_choice == 2:
+        if 0 < user_choice < 4:
             break
         else:
             print("> Invalid menu choice. Please choose one of the given options.")
@@ -304,16 +305,20 @@ def enter_ciphertext_prompt():
 
 def print_encryption_result(ciphertext):
     print("> The result ciphertext from the encryption is: ", ciphertext)
+    input("\n> Press Enter to continue...")
 
 
 def print_decryption_result(plaintext):
     print("> The result plaintext from the decryption is: ", plaintext)
+    input("\n> Press Enter to continue...")
 
 
 def main():
-    """ Executes an encryption and a decryption example using the SDES algorithm
-    and prints the results """
-    #
+    # *** START - For Testing Purposes only ***
+
+    # Comment out if you want to test the algorithm's functionality
+    # without interacting with the menus
+
     # # Encryption example
     # key = "1010000010"
     # sdes_obj = Sdes(key)
@@ -334,23 +339,27 @@ def main():
     # print("- Using ciphertext: ", ciphertext)
     # print("- The result plaintext is: ", plaintext)
 
+    # *** END - For Testing Purposes only ***
 
-    # If mode == 2 the decryption method is called
-    mode = menu()
-    if mode == 1:
-        # If mode == 1 the encryption method is called
+    while True:
+        mode = menu()
+        if mode == 1:
+            # If mode == 1 the encryption method is called
 
-        # Request the 10-bit key from the user and use it
-        # to initialize the Sdes class object
-        sdes_obj = Sdes(enter_key_prompt())
-        print_encryption_result(sdes_obj.encrypt(enter_plaintext_prompt()))
-    elif mode == 2:
-        # If mode == 2 the decryption method is called
+            # Request the 10-bit key from the user and use it
+            # to initialize the Sdes class object
+            sdes_obj = Sdes(enter_key_prompt())
+            print_encryption_result(sdes_obj.encrypt(enter_plaintext_prompt()))
+        elif mode == 2:
+            # If mode == 2 the decryption method is called
 
-        # Request the 10-bit key from the user and use it
-        # to initialize the Sdes class object
-        sdes_obj = Sdes(enter_key_prompt())
-        print_decryption_result(sdes_obj.decrypt(enter_ciphertext_prompt()))
+            # Request the 10-bit key from the user and use it
+            # to initialize the Sdes class object
+            sdes_obj = Sdes(enter_key_prompt())
+            print_decryption_result(sdes_obj.decrypt(enter_ciphertext_prompt()))
+        elif mode == 3:
+            # If mode == 3 the user has requested to exit
+            return
 
 
 if __name__ == "__main__":
