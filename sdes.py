@@ -239,6 +239,7 @@ class Sdes:
 
         return self.__initial_permutation_inverse((l_sublist, r_sublist))
 
+
 def menu():
     title = """\n\n 
      ___________ _____ _____    ___  _                  _ _   _                 _____       _            _       _             
