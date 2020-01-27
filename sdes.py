@@ -3,12 +3,12 @@ from collections import deque
 
 class Sdes:
 
-    s0_matrix = [["01", "00", "11", "10"],
+    __s0_matrix = [["01", "00", "11", "10"],
                  ["11", "10", "01", "00"],
                  ["00", "10", "01", "11"],
                  ["11", "01", "11", "10"]]
 
-    s1_matrix = [["00", "01", "10", "11"],
+    __s1_matrix = [["00", "01", "10", "11"],
                  ["10", "00", "01", "11"],
                  ["11", "00", "01", "00"],
                  ["10", "01", "00", "11"]]
@@ -16,9 +16,9 @@ class Sdes:
     def __init__(self, key):
         self.__subkey_1 = None
         self.__subkey_2 = None
-        self.generate_subkeys(key)
+        self.__generate_subkeys(key)
 
-    def binary_list_xor(self, list_1, list_2):
+    def __binary_list_xor(self, list_1, list_2):
         """ Performs the bit-by-bit XOR operation between two binary lists
         of equal size and returns a list containing the result """
 
@@ -31,7 +31,7 @@ class Sdes:
 
         return xor_res
 
-    def generate_subkeys(self, key):
+    def __generate_subkeys(self, key):
         """ Receives a 10-bit key and generates 2 subkeys """
 
         # Perform P10 (Permutation-10)
@@ -103,7 +103,7 @@ class Sdes:
         # Store the result of P8 as subkey_2
         self.subkey_2 = p_8
 
-    def initial_permutation(self, plaintext_str):
+    def __initial_permutation(self, plaintext_str):
         """Performs the Initial Permutation (IP)"""
 
         ip = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -123,7 +123,7 @@ class Sdes:
 
         return l_sublist, r_sublist
 
-    def initial_permutation_inverse(self, fk_output):
+    def __initial_permutation_inverse(self, fk_output):
         """ Performs the Inverse of Initial Permutation """
 
         # Combine both 4-bit lists given by the fk function into one
@@ -143,10 +143,10 @@ class Sdes:
         # Return the result (ciphertext) as a string.
         return "".join(str(bit) for bit in ip_inv)
 
-    def switch_function(self, first_list, second_list):
+    def __switch_function(self, first_list, second_list):
         return second_list, first_list
 
-    def fk_function(self, l_sublist, r_sublist, subkey):
+    def __fk_function(self, l_sublist, r_sublist, subkey):
 
         # Perform the Expansion/Permutation (E/P) operation using r_sublist
         ep = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -161,7 +161,7 @@ class Sdes:
 
         # Perform the bit-by-bit XOR operation between E/P and the subkey
         # given to the Fk method.
-        xor_res = self.binary_list_xor(ep, subkey)
+        xor_res = self.__binary_list_xor(ep, subkey)
 
         # Split the 8-bit xor_res list into 2 subsequences, with the first subsequence
         # containing the first 4 bits of the original list and the second
@@ -174,14 +174,14 @@ class Sdes:
         # subseq_1 = [bit0, bit1, bit2, bit3] --> get S0[bit0bit3, bit1bit2]
         s0_x = int(str(subseq_1[0]) + str(subseq_1[3]), 2)
         s0_y = int(str(subseq_1[1]) + str(subseq_1[2]), 2)
-        s0_res_str = self.s0_matrix[s0_x][s0_y]
+        s0_res_str = self.__s0_matrix[s0_x][s0_y]
 
         # For the second subsequence, get the value of the S1 matrix
         # that is indicated by the subsequence's bits as follows:
         # subseq_2 = [bit0, bit1, bit2, bit3] --> get S1[bit0bit3, bit1bit2]
         s1_x = int(str(subseq_2[0]) + str(subseq_2[3]), 2)
         s1_y = int(str(subseq_2[1]) + str(subseq_2[2]), 2)
-        s1_res_str = self.s1_matrix[s1_x][s1_y]
+        s1_res_str = self.__s1_matrix[s1_x][s1_y]
 
         # Combine both strings containing binary numbers into one that
         # will be given as input to P4 (Permutation-4)
@@ -199,7 +199,7 @@ class Sdes:
 
         # Perform the bit-by-bit XOR operation between the left sublist (l_sublist) of the initial input
         # given to Fk and P4's result to get the final result returned by Fk
-        xor_res = self.binary_list_xor(l_sublist, p4)
+        xor_res = self.__binary_list_xor(l_sublist, p4)
 
         return xor_res, r_sublist
 
@@ -211,15 +211,15 @@ class Sdes:
 
         """
 
-        l_sublist, r_sublist = self.initial_permutation(plaintext)
+        l_sublist, r_sublist = self.__initial_permutation(plaintext)
 
-        addition_list, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_1)
+        addition_list, r_sublist = self.__fk_function(l_sublist, r_sublist, self.subkey_1)
 
-        l_sublist, r_sublist = self.switch_function(addition_list, r_sublist)
+        l_sublist, r_sublist = self.__switch_function(addition_list, r_sublist)
 
-        l_sublist, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_2)
+        l_sublist, r_sublist = self.__fk_function(l_sublist, r_sublist, self.subkey_2)
 
-        return self.initial_permutation_inverse((l_sublist, r_sublist))
+        return self.__initial_permutation_inverse((l_sublist, r_sublist))
 
     def decrypt(self, ciphertext):
         """ Receives an 8-bit plaintext and decrypts it using the SDES algorithm.
@@ -229,40 +229,128 @@ class Sdes:
 
         """
 
-        l_sublist, r_sublist = self.initial_permutation(ciphertext)
+        l_sublist, r_sublist = self.__initial_permutation(ciphertext)
 
-        addition_list, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_2)
+        addition_list, r_sublist = self.__fk_function(l_sublist, r_sublist, self.subkey_2)
 
-        l_sublist, r_sublist = self.switch_function(addition_list, r_sublist)
+        l_sublist, r_sublist = self.__switch_function(addition_list, r_sublist)
 
-        l_sublist, r_sublist = self.fk_function(l_sublist, r_sublist, self.subkey_1)
+        l_sublist, r_sublist = self.__fk_function(l_sublist, r_sublist, self.subkey_1)
 
-        return self.initial_permutation_inverse((l_sublist, r_sublist))
+        return self.__initial_permutation_inverse((l_sublist, r_sublist))
+
+def menu():
+    title = """ 
+         ___________ _____ _____    ___  _                  _ _   _                 _____       _            _       _             
+        /  ___|  _  \  ___/  ___|  / _ \| |                (_) | | |               /  __ \     | |          | |     | |            
+        \ `--.| | | | |__ \ `--.  / /_\ \ | __ _  ___  _ __ _| |_| |__  _ __ ___   | /  \/ __ _| | ___ _   _| | __ _| |_ ___  _ __ 
+         `--. \ | | |  __| `--. \ |  _  | |/ _` |/ _ \| '__| | __| '_ \| '_ ` _ \  | |    / _` | |/ __| | | | |/ _` | __/ _ \| '__|
+        /\__/ / |/ /| |___/\__/ / | | | | | (_| | (_) | |  | | |_| | | | | | | | | | \__/\ (_| | | (__| |_| | | (_| | || (_) | |   
+        \____/|___/ \____/\____/  \_| |_/_|\__, |\___/|_|  |_|\__|_| |_|_| |_| |_|  \____/\__,_|_|\___|\__,_|_|\__,_|\__\___/|_|   
+                                            __/ |                                                                                  
+                                           |___/                                                                                   
+        """
+    print(title)
+    print("\n\n> This is an example implementation of the SDES algorithm for binary data. \n")
+    print("> Please choose one of the following: \n"
+          "  1) Encrypt a binary sequence\n"
+          "  2) Decrypt a binary sequence")
+
+    while True:
+        user_choice = int(input("\n> Enter your choice number: "))
+        if user_choice == 1 or user_choice == 2:
+            break
+        else:
+            print("> Invalid menu choice. Please choose one of the given options.")
+
+    return user_choice
+
+
+def enter_key_prompt():
+    while True:
+        input_key = input("> Please enter the 10-bit key you want to use: ")
+
+        if len(input_key) != 10:
+            print("> Invalid key size. Key should consist of 10 bits.")
+        else:
+            break
+
+    return input_key
+
+
+def enter_plaintext_prompt():
+    while True:
+        plaintext = input("> Please enter the 8-bit plaintext binary sequence you want to encrypt: ")
+
+        if len(plaintext) != 8:
+            print("> Invalid sequence size. Sequence should consist of 8 bits.")
+        else:
+            break
+
+    return plaintext
+
+
+def enter_ciphertext_prompt():
+    while True:
+        ciphertext = input("> Please enter the 8-bit ciphertext binary sequence you want to decrypt: ")
+
+        if len(ciphertext) != 8:
+            print("> Invalid sequence size. Sequence should consist of 8 bits.")
+        else:
+            break
+
+    return ciphertext
+
+
+def print_encryption_result(ciphertext):
+    print("> The result ciphertext from the encryption is: ", ciphertext)
+
+
+def print_decryption_result(plaintext):
+    print("> The result plaintext from the decryption is: ", plaintext)
 
 
 def main():
     """ Executes an encryption and a decryption example using the SDES algorithm
     and prints the results """
+    #
+    # # Encryption example
+    # key = "1010000010"
+    # sdes_obj = Sdes(key)
+    # plaintext = "01110010"
+    # ciphertext = sdes_obj.encrypt(plaintext)
+    # print("> Encryption example: ")
+    # print("- Using key: ", key)
+    # print("- Using plaintext: ", plaintext)
+    # print("- The result ciphertext is: ", ciphertext)
+    #
+    # # Decryption example
+    # key = "1010000010"
+    # sdes_obj = Sdes(key)
+    # ciphertext = "01110111"
+    # plaintext = sdes_obj.decrypt(ciphertext)
+    # print("\n\n> Decryption example: ")
+    # print("- Using key: ", key)
+    # print("- Using ciphertext: ", ciphertext)
+    # print("- The result plaintext is: ", plaintext)
 
-    # Encryption example
-    key = "1010000010"
-    sdes_obj = Sdes(key)
-    plaintext = "01110010"
-    ciphertext = sdes_obj.encrypt(plaintext)
-    print("> Encryption example: ")
-    print("- Using key: ", key)
-    print("- Using plaintext: ", plaintext)
-    print("- The result ciphertext is: ", ciphertext)
 
-    # Decryption example
-    key = "1010000010"
-    sdes_obj = Sdes(key)
-    ciphertext = "01110111"
-    plaintext = sdes_obj.decrypt(ciphertext)
-    print("\n\n> Decryption example: ")
-    print("- Using key: ", key)
-    print("- Using ciphertext: ", ciphertext)
-    print("- The result plaintext is: ", plaintext)
+    # If mode == 2 the decryption method is called
+    mode = menu()
+    if mode == 1:
+        # If mode == 1 the encryption method is called
+
+        # Request the 10-bit key from the user and use it
+        # to initialize the Sdes class object
+        sdes_obj = Sdes(enter_key_prompt())
+        print_encryption_result(sdes_obj.encrypt(enter_plaintext_prompt()))
+    elif mode == 2:
+        # If mode == 2 the decryption method is called
+
+        # Request the 10-bit key from the user and use it
+        # to initialize the Sdes class object
+        sdes_obj = Sdes(enter_key_prompt())
+        print_decryption_result(sdes_obj.decrypt(enter_ciphertext_prompt()))
 
 
 if __name__ == "__main__":
